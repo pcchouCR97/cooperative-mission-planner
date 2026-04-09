@@ -4,8 +4,8 @@ A modular MILP/CP-SAT solver for cooperative multi-agent combat mission planning
 
 **Status:** All 6 validation scenarios solve to OR-Tools `OPTIMAL` with gaps <= 0.77% in 16-270 seconds. A 5-sector campaign demonstrator (14 agents, 22 SAMs, 1500 km theater) solves all-OPTIMAL in under 9 minutes.
 
-![SC4: Layered IADS -- 4 agents navigating 6 SAMs to strike 2 HVTs](figures/sc4_layered_iads.png)
-*SC4: Layered IADS scenario. Two F-35As and one MQ-58 jammer navigate a 6-SAM layered defense to strike two high-value targets. Solved OPTIMAL, 0.00% gap, 270s.*
+![SC4: Layered IADS](figures/sc4_layered_iads.png)
+*SC4: Layered IADS. Two F-35As penetrate a 6-SAM three-layer defense to strike two HVTs. OPTIMAL, 0.00% gap, 270s.*
 
 ---
 
@@ -104,6 +104,20 @@ Jammer placement is constrained by:
 
 SC6 is the only scenario where jamming activates (21 slots) -- all others use standoff weapons (JASSM-ER, 370+ km) to avoid the SAM engagement zone entirely. The precompute pipeline detects this in < 1 second.
 
+### Mission Reports (Full Production Plots)
+
+![SC1: Corridor Strike](figures/sc1_corridor_strike.png)
+*SC1: Corridor Strike. Baseline escort-jam regression test. 3 agents, 3 SAMs, 2 HVTs.*
+
+![SC3: SAM Wall Penetration](figures/sc3_sam_wall.png)
+*SC3: SAM Wall. Two strikers + jammer penetrate a 6-SAM linear barrier.*
+
+![SC5: Dense IADS + S-400](figures/sc5_dense_iads.png)
+*SC5: Dense IADS with S-400 anchor. 3x F-35A + MQ-58 vs 8 SAMs, 3 HVTs. Hardest scenario.*
+
+![SC6: HVT Inside SAM](figures/sc6_hvt_inside_sam.png)
+*SC6: HVT Inside SAM coverage. Only scenario requiring active jamming (21 slots). Proves the EW model works.*
+
 ### Constraint Ablation
 
 ![Gap reduction waterfall](figures/ablation_waterfall.png)
@@ -124,7 +138,13 @@ A 5-sector, 3-wave campaign across a 1500 x 2000 km theater:
 **Total: 14 agents, 22 SAMs, 5/5 OPTIMAL in 481 seconds.** MQ-58 jammers transfer between waves via A*-routed corridors (1039 km, 73 min + 750 km, 53 min).
 
 ![Campaign theater map](figures/campaign_map.png)
-*Five-sector campaign with threat rings, agent start positions, and strike assignments across a 1500 km theater.*
+*Five-sector campaign theater. 14 agents, 22 SAMs, jammer transfer routes (dashed), all OPTIMAL in 481s.*
+
+![Campaign Gantt chart](figures/campaign_gantt.png)
+*Campaign Gantt: 3-wave sequencing with jammer transfer windows between sectors.*
+
+![Campaign mission schedule](figures/campaign_schedule.png)
+*Per-agent mission schedule across all 5 sectors. Ingress, strike, jam, exit, and MQ-58 transfer phases.*
 
 ---
 
