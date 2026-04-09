@@ -182,7 +182,7 @@ A 5-sector, 3-wave campaign across a 1500 x 2000 km theater:
 | 2 | C Layered IADS | 4 agents | 6 | 224s | OPTIMAL |
 | 3 | SE Close Strike | 3 agents | 3 | 124s | OPTIMAL |
 
-**Total: 14 agents, 22 SAMs, 5/5 OPTIMAL in 481 seconds.** MQ-58 jammers transfer between waves via A*-routed corridors (1039 km, 73 min + 750 km, 53 min).
+**Total: 14 agents, 22 SAMs, 5/5 OPTIMAL in 481 seconds.** MQ-58 jammers transfer between waves via A*-routed corridors (1039 km, 73 min + 750 km, 53 min). Tanker support is assumed between waves; fuel is enforced per-sector, not across the full campaign.
 
 *(Campaign map and per-agent schedule shown at top of page.)*
 
