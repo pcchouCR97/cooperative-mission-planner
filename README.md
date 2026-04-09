@@ -4,8 +4,11 @@ A modular MILP/CP-SAT solver for cooperative multi-agent combat mission planning
 
 **Status:** All 6 validation scenarios solve to OR-Tools `OPTIMAL` with gaps <= 0.77% in 16-270 seconds. A 5-sector campaign demonstrator (14 agents, 22 SAMs, 1500 km theater) solves all-OPTIMAL in under 9 minutes.
 
-![SC6: HVT Inside SAM -- the only scenario where jamming activates](figures/appendix_sc6.png)
-*SC6: Two F-35A strikers and one MQ-58 jammer versus 2 S-300 and 1 Buk-M2, with HVTs inside SAM coverage. MQ-58 escorts strikers through the threat belt with 21 active jam slots. OPTIMAL, 0.01% gap, 302s.*
+![Campaign theater map](figures/campaign_map.png)
+*Five-sector campaign theater. 14 agents, 22 SAMs, 3 waves, jammer transfer routes (dashed), all OPTIMAL in 481s.*
+
+![Campaign mission schedule](figures/campaign_schedule.png)
+*Per-agent mission schedule across all 5 sectors. Ingress, strike, jam, exit, and MQ-58 transfer phases.*
 
 ---
 
@@ -181,14 +184,7 @@ A 5-sector, 3-wave campaign across a 1500 x 2000 km theater:
 
 **Total: 14 agents, 22 SAMs, 5/5 OPTIMAL in 481 seconds.** MQ-58 jammers transfer between waves via A*-routed corridors (1039 km, 73 min + 750 km, 53 min).
 
-![Campaign theater map](figures/campaign_map.png)
-*Five-sector campaign theater. 14 agents, 22 SAMs, jammer transfer routes (dashed), all OPTIMAL in 481s.*
-
-![Campaign Gantt chart](figures/campaign_gantt.png)
-*Campaign Gantt: 3-wave sequencing with jammer transfer windows between sectors.*
-
-![Campaign mission schedule](figures/campaign_schedule.png)
-*Per-agent mission schedule across all 5 sectors. Ingress, strike, jam, exit, and MQ-58 transfer phases.*
+*(Campaign map and per-agent schedule shown at top of page.)*
 
 ---
 
