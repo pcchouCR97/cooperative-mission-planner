@@ -4,8 +4,8 @@ A modular MILP/CP-SAT solver for cooperative multi-agent combat mission planning
 
 **Status:** All 6 validation scenarios solve to OR-Tools `OPTIMAL` with gaps <= 0.77% in 16-270 seconds. A 5-sector campaign demonstrator (14 agents, 22 SAMs, 1500 km theater) solves all-OPTIMAL in under 9 minutes.
 
-![SC4: Layered IADS](figures/sc4_layered_iads.png)
-*SC4: Layered IADS. Two F-35As penetrate a 6-SAM three-layer defense to strike two HVTs. OPTIMAL, 0.00% gap, 270s.*
+![SC6: HVT Inside SAM -- the only scenario where jamming activates](figures/appendix_sc6.png)
+*SC6: Two F-35A strikers and one MQ-58 jammer versus 2 S-300 and 1 Buk-M2, with HVTs inside SAM coverage. MQ-58 escorts strikers through the threat belt with 21 active jam slots. OPTIMAL, 0.01% gap, 302s.*
 
 ---
 
@@ -104,19 +104,63 @@ Jammer placement is constrained by:
 
 SC6 is the only scenario where jamming activates (21 slots) -- all others use standoff weapons (JASSM-ER, 370+ km) to avoid the SAM engagement zone entirely. The precompute pipeline detects this in < 1 second.
 
-### Mission Reports (Full Production Plots)
+### Mission Reports
 
-![SC1: Corridor Strike](figures/sc1_corridor_strike.png)
-*SC1: Corridor Strike. Baseline escort-jam regression test. 3 agents, 3 SAMs, 2 HVTs.*
+Each scenario is shown with jammer (left) and without jammer (right), demonstrating the solver's ability to exploit standoff weapons when jamming is unnecessary.
 
-![SC3: SAM Wall Penetration](figures/sc3_sam_wall.png)
-*SC3: SAM Wall. Two strikers + jammer penetrate a 6-SAM linear barrier.*
+**SC1 -- Corridor Strike** (2x F-35A + MQ-58, 3 SAMs, 2 HVTs)
 
-![SC5: Dense IADS + S-400](figures/sc5_dense_iads.png)
-*SC5: Dense IADS with S-400 anchor. 3x F-35A + MQ-58 vs 8 SAMs, 3 HVTs. Hardest scenario.*
+| With Jammer | Without Jammer |
+|:-----------:|:--------------:|
+| ![SC1 with jammer](figures/sc1_with_jammer.png) | ![SC1 no jammer](figures/sc1_no_jammer.png) |
+| OPTIMAL, 16.0M, 118s, 0 jam slots | OPTIMAL, 10.5M, 49s, 2.4x speedup |
 
-![SC6: HVT Inside SAM](figures/sc6_hvt_inside_sam.png)
-*SC6: HVT Inside SAM coverage. Only scenario requiring active jamming (21 slots). Proves the EW model works.*
+**SC2 -- Flanking Maneuver** (F-35A + 2x MQ-58, 4 SAMs, 1 HVT)
+
+| With Jammer | Without Jammer |
+|:-----------:|:--------------:|
+| ![SC2 with jammer](figures/sc2_with_jammer.png) | ![SC2 no jammer](figures/sc2_no_jammer.png) |
+| OPTIMAL, 17.0M, 149s | OPTIMAL, 12.0M, 5s, 29.8x speedup |
+
+**SC3 -- SAM Wall** (2x F-35A + MQ-58, 6 SAMs, 2 HVTs)
+
+| With Jammer | Without Jammer |
+|:-----------:|:--------------:|
+| ![SC3 with jammer](figures/sc3_with_jammer.png) | ![SC3 no jammer](figures/sc3_no_jammer.png) |
+| OPTIMAL, 209.0M, 39s | OPTIMAL, 9.5M, 4s, 9.8x speedup |
+
+**SC4 -- Layered IADS** (2x F-35A + 2x MQ-58, 6 SAMs, 2 HVTs)
+
+| With Jammer | Without Jammer |
+|:-----------:|:--------------:|
+| ![SC4 with jammer](figures/sc4_with_jammer.png) | ![SC4 no jammer](figures/sc4_no_jammer.png) |
+| OPTIMAL, 211.0M, 271s, 480 escort-jam BoolVars | OPTIMAL, 14.0M, 31s, 8.7x speedup |
+
+**SC5 -- Dense IADS + S-400** (3x F-35A + MQ-58, 8 SAMs, 3 HVTs)
+
+| With Jammer | Without Jammer |
+|:-----------:|:--------------:|
+| ![SC5 with jammer](figures/sc5_with_jammer.png) | ![SC5 no jammer](figures/sc5_no_jammer.png) |
+| OPTIMAL, 28.1M, 267s, 0.03% gap | OPTIMAL, 16.1M, 136s, 2.0x speedup |
+
+**SC6 -- HVT Inside SAM** (2x F-35A + MQ-58, 3 SAMs, 2 HVTs inside MEZ)
+
+| With Jammer | Without Jammer |
+|:-----------:|:--------------:|
+| ![SC6 with jammer](figures/sc6_with_jammer.png) | ![SC6 no jammer](figures/sc6_no_jammer.png) |
+| OPTIMAL, 132.0M, 302s, 21 active jam slots | OPTIMAL, standoff bypass |
+
+*SC6 is the only scenario where the MQ-58 activates jamming. All others exploit standoff weapons to avoid SAM engagement zones entirely.*
+
+### Jammer Ablation
+
+| Scenario | With Jammer | Without | Speedup |
+|----------|-------------|---------|---------|
+| SC1 | 118s | 49s | 2.4x |
+| SC2 | 149s | 5s | 29.8x |
+| SC3 | 39s | 4s | 9.8x |
+| SC4 | 271s | 31s | 8.7x |
+| SC5 | 267s | 136s | 2.0x |
 
 ### Constraint Ablation
 
@@ -167,16 +211,17 @@ cooperative-mission-planner/
 |-- .gitignore
 |-- requirements.txt
 |
-|-- figures/                    # Curated showcase figures (paper-quality)
-|   |-- sc4_layered_iads.png
-|   |-- sc6_hvt_inside_sam.png
-|   |-- campaign_map.png
-|   |-- campaign_gantt.png
-|   |-- xdsm_architecture.png
-|   |-- octagon_geometry.png
-|   |-- pk_model.png
-|   |-- ablation_waterfall.png
-|   +-- sc1_corridor_strike.png
+|-- figures/                    # Paper-quality figures (white background)
+|   |-- appendix_sc6.png       # Hero: SC6 full trajectory + Gantt
+|   |-- sc1-sc6_with_jammer.png  # With-jammer mission reports
+|   |-- sc1-sc6_no_jammer.png    # Without-jammer ablation
+|   |-- campaign_map.png       # 5-sector campaign theater
+|   |-- campaign_gantt.png     # Campaign wave Gantt
+|   |-- campaign_schedule.png  # Per-agent mission schedule
+|   |-- xdsm_architecture.png  # Solver pipeline XDSM
+|   |-- octagon_geometry.png   # Octagonal norm comparison
+|   |-- pk_model.png           # Zarchan Pk(R) curves
+|   +-- ablation_waterfall.png # Constraint ablation waterfall
 |
 |-- formulation/                # Mathematical formulation (cleaned excerpts)
 |   |-- variables.md            # Decision variable catalog
