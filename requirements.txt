@@ -1,0 +1,4 @@
+# Core dependencies for physics model excerpts
+# (The full solver requires additional private modules)
+numpy>=1.24
+matplotlib>=3.7
