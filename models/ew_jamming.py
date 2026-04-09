@@ -60,26 +60,27 @@ def js_ratio_dB(Pj_W, Gj_dBi, Rr_km, Pr_W, Gr_dBi, Rj_km,
     return 10.0 * math.log10(ratio)
 
 
-# -- Angular dependence of radar gain toward jammer --
+# -- Angular dependence: geometric enforcement via half-plane --
 #
-# The radar antenna gain Gr(theta) toward the jammer is the critical
-# factor in escort jamming effectiveness:
-#
-# | Angle from mainlobe | Typical Gr (dBi) | J/S impact         |
-# |---------------------|------------------|--------------------|
-# | < 15 deg (mainlobe) | 30-40            | Jammer least effective |
-# | 15-30 deg (transition) | 10-20         | Moderate effectiveness |
-# | > 30 deg (sidelobe) | -10 to -20       | Jammer most effective |
-#
-# The solver enforces a half-plane constraint to ensure the jammer
-# is on the striker-approach side of the radar, maximizing the angle
-# between the radar mainlobe (pointed at striker) and the jammer:
+# The radar antenna gain Gr(theta) toward the jammer determines
+# escort jamming effectiveness. Rather than modeling Gr(theta)
+# analytically, the solver enforces favorable geometry via a
+# half-plane constraint:
 #
 #     n . (p_jammer - p_radar) <= 0
 #
-# where n is the normal vector pointing from radar toward striker.
-# This ensures the jammer exploits sidelobe gain (low Gr) for
-# maximum J/S ratio.
+# where n is the normal vector from radar toward the striker fleet.
+# This forces the jammer to the striker-approach side of the radar,
+# placing it in the sidelobe region (low Gr, high J/S) rather than
+# the mainlobe (high Gr, low J/S).
+#
+# Typical angular dependence of Gr:
+#
+# | Angle from mainlobe | Typical Gr (dBi) | J/S impact             |
+# |---------------------|------------------|------------------------|
+# | < 15 deg (mainlobe) | 30-40            | Jammer least effective |
+# | 15-30 deg           | 10-20            | Moderate               |
+# | > 30 deg (sidelobe) | -10 to -20       | Jammer most effective  |
 
 
 # -- Jam range geometry in the solver --

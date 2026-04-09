@@ -43,11 +43,6 @@ HVTS = [
 
 EXIT = {"pos": (100, 300), "tolerance_km": 30}
 
-# -- IADS C2 network --
-IADS_LINKS = {
-    "Radar-EW": ["S-300 West", "S-300 East", "Buk-M2 Fwd"],
-}
-
 # -- Solver parameters --
 SOLVER = {
     "dt": 60,

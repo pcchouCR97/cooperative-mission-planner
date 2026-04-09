@@ -74,13 +74,13 @@ jam_fcr_{j,m}[t] = 1  =>  ||j[t] - p_s(m)||_oct <= R_jam
 
 where R_jam = min(R_platform, max(1.5 * R_hard, 60 km)).
 
-### Mainlobe Half-Plane
+### Mainlobe Half-Plane (Geometric)
 
 ```
-jam_fcr_{j,m}[t] = 1  =>  n . (p_j[t] - p_radar) <= 0
+jam_fcr_{j,m}[t] = 1  =>  n . (p_j[t] - p_SAM) <= 0
 ```
 
-Jammer must be on the striker-approach side of the radar (sidelobe J/S requirement).
+Geometric constraint forcing the jammer to the striker-approach side of the SAM. This exploits sidelobe geometry for favorable J/S without modeling Gr(theta) analytically.
 
 ### Strike Standoff
 

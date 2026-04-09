@@ -86,8 +86,8 @@ where `alpha` encodes guidance quality (command-guided: 2, semi-active: 3, activ
 ### Electronic Warfare
 
 Jammer placement is constrained by:
-- **Jam range envelope:** octagonal containment within effective J/S radius
-- **Mainlobe half-plane:** jammer must be on the striker-approach side of the radar
+- **Jam range envelope:** octagonal containment within effective jam radius
+- **Mainlobe half-plane:** geometric constraint forces the jammer to the striker-approach side of the radar, exploiting sidelobe gain for favorable J/S geometry
 - **Multi-beam AESA:** MQ-58 can simultaneously jam up to 3 SAMs
 
 ---

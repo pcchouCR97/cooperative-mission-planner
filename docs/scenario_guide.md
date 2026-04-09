@@ -13,7 +13,6 @@ Each scenario in `scenarios/` defines:
 | `RADARS` | Early warning radars with position and detection radius |
 | `HVTS` | High-value targets with position and hardness |
 | `EXIT` | Egress point with tolerance radius |
-| `IADS_LINKS` | C2 network connecting radars to SAMs (for IADS cascade) |
 | `SOLVER` | Time discretization, horizon, and solver parameters |
 
 ## Reading the Result Figures
