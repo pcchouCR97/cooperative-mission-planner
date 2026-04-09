@@ -1,14 +1,29 @@
 # Cooperative Mission Planner for Manned-Unmanned Teaming
 
+> **This is a curated public portfolio**, not a full research release. It contains selected figures, formulation documentation, physics model excerpts, and scenario definitions from a private production solver. The full CP-SAT engine, scenario suite, and paper are maintained in a separate private repository.
+
 A modular MILP/CP-SAT solver for cooperative multi-agent combat mission planning in contested airspace. Built for the loyal wingman paradigm: F-35A strike aircraft paired with MQ-58 collaborative combat aircraft (CCA) providing electronic warfare support against layered surface-to-air missile (SAM) defenses.
 
-**Status:** All 6 validation scenarios solve to OR-Tools `OPTIMAL` with gaps <= 0.77% in 16-270 seconds. A 5-sector campaign demonstrator (14 agents, 22 SAMs, 1500 km theater) solves all-OPTIMAL in under 9 minutes.
+All six validation scenarios reach OR-Tools `OPTIMAL` status with gaps below 1%. A campaign-level decomposition layer coordinates multi-sector operations across a 1500 km theater.
 
 ![Campaign theater map](figures/campaign_map.png)
-*Five-sector campaign theater. 14 agents, 22 SAMs, 3 waves, jammer transfer routes (dashed), all OPTIMAL in 481s.*
+*Five-sector campaign theater. 14 agents, 22 SAMs, 3 waves, with MQ-58 jammer transfer routes between sectors.*
 
 ![Campaign mission schedule](figures/campaign_schedule.png)
-*Per-agent mission schedule across all 5 sectors. Ingress, strike, jam, exit, and MQ-58 transfer phases.*
+*Per-agent mission schedule across all 5 sectors showing ingress, strike, jam, exit, and MQ-58 transfer phases.*
+
+---
+
+## What Is Included
+
+| Included (this repo) | Private (not included) |
+|----------------------|------------------------|
+| Paper-quality figures for all 6 scenarios | Full CP-SAT solver engine |
+| Mathematical formulation (variables, objective, constraints) | Production scenario configs with all internal parameters |
+| Physics model excerpts (radar, SAM Pk, EW) | Precompute pipeline implementation |
+| Scenario geometry definitions | ML warm-start module |
+| Solver architecture description | Sprint logs, ETPs, experiment data |
+| Campaign demonstrator results | Streamlit web application |
 
 ---
 
@@ -31,13 +46,13 @@ This is **not** a vehicle routing problem. The temporal coupling between electro
 ```
 Scenario Config
       |
-[L0] Payload Advisor ---- burn-through range, J/S feasibility (1.9 ms)
+[L0] Payload Advisor ---- burn-through range, J/S feasibility
       |
 [L1] Fleet Divider ------ greedy threat-to-team assignment
       |
-[L2] DAG Scheduler ------ wave ordering via Kahn's algorithm (0.02 ms)
+[L2] DAG Scheduler ------ wave ordering via Kahn's algorithm
       |
-[L3] Transfer Router ---- A* jammer repositioning between sectors (170 ms)
+[L3] Transfer Router ---- A* jammer repositioning between sectors
       |
 [L4] Trajectory Solver -- per-team CP-SAT with full constraint set
       |
@@ -55,7 +70,7 @@ Scenario Config
 | **SAM avoidance** | 8-direction disjunction + jam escape | Unified threat avoidance and electronic attack in one constraint |
 | **Objective** | Pk-weighted lexicographic (attrition >> time >> cost) | Dollar-valued attrition prevents trivial "fly around everything" solutions |
 | **Jam model** | Per-SAM FCR escort jam | Each jammer targets specific SAM fire-control radars per slot |
-| **Precompute** | 4-stage pipeline (audit, budget, reachability, fleet reduction) | 40-60% variable reduction before solver starts |
+| **Precompute** | Multi-stage pipeline (audit, budget, reachability, fleet reduction) | 40-60% variable reduction before solver starts |
 
 ---
 
@@ -94,22 +109,9 @@ Jammer placement is constrained by:
 
 ## Validation Results
 
-### Scenario Suite (v6 Pipeline, Lexicographic Objective)
+### Scenario Suite
 
-| Scenario | Fleet | SAMs | HVTs | Status | Gap | Time |
-|----------|-------|------|------|--------|-----|------|
-| SC1 -- Corridor Strike | 2x F-35A + MQ-58 | 3 | 2 | OPTIMAL | 0.77% | 120s |
-| SC2 -- Flanking Maneuver | F-35A + 2x MQ-58 | 4 | 1 | OPTIMAL | 0.00% | 39s |
-| SC3 -- SAM Wall | 2x F-35A + MQ-58 | 6 | 2 | OPTIMAL | 0.00% | 16s |
-| SC4 -- Layered IADS | 2x F-35A + 2x MQ-58 | 6 | 2 | OPTIMAL | 0.00% | 270s |
-| SC5 -- Dense IADS + S-400 | 3x F-35A + MQ-58 | 8 | 3 | OPTIMAL | 0.03% | 267s |
-| SC6 -- HVT Inside SAM | 2x F-35A + MQ-58 | 3 | 2 | OPTIMAL | 0.01% | 154s |
-
-SC6 is the only scenario where jamming activates (21 slots) -- all others use standoff weapons (JASSM-ER, 370+ km) to avoid the SAM engagement zone entirely. The precompute pipeline detects this in < 1 second.
-
-### Mission Reports
-
-Each scenario is shown with jammer (left) and without jammer (right), demonstrating the solver's ability to exploit standoff weapons when jamming is unnecessary.
+Each scenario was solved with and without the MQ-58 jammer to measure both mission feasibility and solver overhead. All times below are from the appendix runs reported in the companion paper; solve times vary across solver versions and hardware.
 
 **SC1 -- Corridor Strike** (2x F-35A + MQ-58, 3 SAMs, 2 HVTs)
 
@@ -137,7 +139,7 @@ Each scenario is shown with jammer (left) and without jammer (right), demonstrat
 | With Jammer | Without Jammer |
 |:-----------:|:--------------:|
 | ![SC4 with jammer](figures/sc4_with_jammer.png) | ![SC4 no jammer](figures/sc4_no_jammer.png) |
-| OPTIMAL, 211.0M, 271s, 480 escort-jam BoolVars | OPTIMAL, 14.0M, 31s, 8.7x speedup |
+| OPTIMAL, 211.0M, 271s | OPTIMAL, 14.0M, 31s, 8.7x speedup |
 
 **SC5 -- Dense IADS + S-400** (3x F-35A + MQ-58, 8 SAMs, 3 HVTs)
 
@@ -157,6 +159,8 @@ Each scenario is shown with jammer (left) and without jammer (right), demonstrat
 
 ### Jammer Ablation
 
+Removing the MQ-58 reduces solve time by 2.0--29.8x because the escort-jam coupling (n_j x n_s x N BoolVars) dominates the search.
+
 | Scenario | With Jammer | Without | Speedup |
 |----------|-------------|---------|---------|
 | SC1 | 118s | 49s | 2.4x |
@@ -168,29 +172,27 @@ Each scenario is shown with jammer (left) and without jammer (right), demonstrat
 ### Constraint Ablation
 
 ![Gap reduction waterfall](figures/ablation_waterfall.png)
-*Cumulative optimality gap reduction on SC6. Each engineering improvement (octagon speed, IB SAM encoding, turn cap, two-phase solve, warm-start hints) reduces gap from 24.1% to 0.2%.*
+*Approximate cumulative optimality gap reduction on SC6 across development. Values are representative of the improvement trend observed during A/B testing (Sprint 16-18), not from a single controlled run.*
 
 ### Campaign Demonstrator
 
-A 5-sector, 3-wave campaign across a 1500 x 2000 km theater:
+A 5-sector, 3-wave campaign across a 1500 x 2000 km theater. Each sector is solved independently by the per-team CP-SAT solver (Layer 4); the campaign orchestration layers (L0-L3) handle fleet assignment, wave ordering, and jammer transfer routing.
 
-| Wave | Sector | Fleet | SAMs | Solve Time | Status |
-|------|--------|-------|------|------------|--------|
-| 1 | NW Corridor | 3 agents | 4 | 89s | OPTIMAL |
-| 1 | NE Wall | 3 agents | 5 | 15s | OPTIMAL |
-| 1 | W Flanking | 3 agents | 4 | 30s | OPTIMAL |
-| 2 | C Layered IADS | 4 agents | 6 | 224s | OPTIMAL |
-| 3 | SE Close Strike | 3 agents | 3 | 124s | OPTIMAL |
+| Wave | Sector | Fleet | SAMs | Status |
+|------|--------|-------|------|--------|
+| 1 | NW Corridor | 3 agents | 4 | OPTIMAL |
+| 1 | NE Wall | 3 agents | 5 | OPTIMAL |
+| 1 | W Flanking | 3 agents | 4 | OPTIMAL |
+| 2 | C Layered IADS | 4 agents | 6 | OPTIMAL |
+| 3 | SE Close Strike | 3 agents | 3 | OPTIMAL |
 
-**Total: 14 agents, 22 SAMs, 5/5 OPTIMAL in 481 seconds.** MQ-58 jammers transfer between waves via A*-routed corridors (1039 km, 73 min + 750 km, 53 min). Tanker support is assumed between waves; fuel is enforced per-sector, not across the full campaign.
-
-*(Campaign map and per-agent schedule shown at top of page.)*
+All five sectors reached OPTIMAL status. Tanker support is assumed between waves; fuel is enforced per-sector, not across the full campaign.
 
 ---
 
 ## Tech Stack
 
-- **Solver:** Google OR-Tools CP-SAT (CDCL(T) lazy clause generation, 16-worker parallel search)
+- **Solver:** Google OR-Tools CP-SAT (CDCL(T) lazy clause generation, multi-threaded parallel search)
 - **Language:** Python 3.11
 - **Physics:** Custom models for radar detection (4th-root law), EW (J/S ratio), SAM engagement (Zarchan Pk), aerodynamic drag (parabolic polar + transonic correction), Breguet fuel consumption
 - **Visualization:** Matplotlib tactical reports with mission schedule Gantt charts
@@ -208,11 +210,9 @@ cooperative-mission-planner/
 |-- requirements.txt
 |
 |-- figures/                    # Paper-quality figures (white background)
-|   |-- appendix_sc6.png       # Hero: SC6 full trajectory + Gantt
-|   |-- sc1-sc6_with_jammer.png  # With-jammer mission reports
-|   |-- sc1-sc6_no_jammer.png    # Without-jammer ablation
+|   |-- appendix_sc6.png       # SC6 full trajectory + Gantt
+|   |-- sc1-sc6 with/without   # With-jammer and no-jammer pairs
 |   |-- campaign_map.png       # 5-sector campaign theater
-|   |-- campaign_gantt.png     # Campaign wave Gantt
 |   |-- campaign_schedule.png  # Per-agent mission schedule
 |   |-- xdsm_architecture.png  # Solver pipeline XDSM
 |   |-- octagon_geometry.png   # Octagonal norm comparison
@@ -244,20 +244,18 @@ cooperative-mission-planner/
 
 ## Selected Publications
 
-**Chou, P.-C.** (2026). *Cooperative Multi-Agent Combat Mission Planning via Constraint Programming: A Modular Solver for Manned-Unmanned Teaming Operations.* Manuscript in preparation.
+**Chou, P.-C.** (2026). *Cooperative Multi-Agent Combat Mission Planning via Constraint Programming: A Modular Solver for Manned-Unmanned Teaming Operations.* Manuscript in preparation. Available on request.
 
 ---
 
 ## About
 
-This project was developed as an independent research effort in combinatorial optimization for defense autonomy. The solver addresses a problem class that sits at the intersection of:
+This project was developed as an independent research effort in combinatorial optimization for defense autonomy. The solver addresses a problem class at the intersection of:
 
 - **Operations research** -- mixed-integer programming with disjunctive constraints
-- **Electronic warfare** -- J/S ratio modeling, mainlobe geometry, IADS suppression
+- **Electronic warfare** -- J/S ratio modeling, mainlobe geometry, SAM suppression
 - **Flight dynamics** -- speed/fuel/turn-rate physics for heterogeneous platforms
 - **Multi-agent coordination** -- temporal coupling between cooperative roles
-
-The full production solver, scenario suite, and paper are maintained in a private repository. This portfolio contains curated artifacts that demonstrate the technical approach and validated results.
 
 ---
 
